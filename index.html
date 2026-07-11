@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Smart Zen — Fidelización</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;min-height:100vh;}
+input,select,button{font-family:inherit;font-size:14px;}
+.hdr{background:#1A237E;padding:16px 20px 12px;text-align:center;}
+.hdr small{color:#00BFA5;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;display:block;}
+.hdr h1{color:#fff;font-size:24px;font-weight:900;margin:2px 0 0;}
+.hdr p{color:#90CAF9;font-size:11px;margin:2px 0 0;}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #F0F4F8;position:sticky;top:0;z-index:10;}
+.tab{flex:1;padding:10px 4px 8px;border:none;background:none;color:#78909C;border-bottom:3px solid transparent;cursor:pointer;}
+.tab.on{color:#1A237E;border-bottom-color:#00BFA5;font-weight:700;}
+.tab i{font-size:18px;display:block;font-style:normal;}
+.tab s{font-size:10px;margin-top:1px;display:block;text-decoration:none;}
+.pg{display:none;padding:20px 16px 60px;max-width:480px;margin:0 auto;}
+.pg.on{display:block;}
+.card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:12px;}
+.blue{background:#EEF2FF;}
+lbl,label.L{font-size:11px;font-weight:700;color:#78909C;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
+input[type=text],input[type=tel],select{width:100%;padding:10px 13px;border-radius:10px;border:1.5px solid #CBD5E0;outline:none;background:#fff;margin-bottom:10px;}
+.row{display:flex;gap:8px;align-items:flex-start;}
+.row input{margin-bottom:0;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn{width:100%;padding:11px 18px;border-radius:10px;font-weight:700;font-size:14px;border:none;cursor:pointer;margin-top:8px;display:block;}
+.P{background:#1A237E;color:#fff;}
+.A{background:#00BFA5;color:#fff;}
+.G{background:#E8EDF2;color:#1A237E;}
+.bsm{width:auto;padding:10px 18px;margin-top:0;}
+.bo{background:transparent;border:1.5px solid #00BFA5;color:#00BFA5;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;margin-top:8px;}
+.err{border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;font-size:13px;font-weight:600;background:rgba(255,111,0,.1);border:1.5px solid #FF6F00;color:#FF6F00;}
+.hide{display:none!important;}
+.slots{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap;}
+.slot{width:50px;height:68px;border-radius:10px;background:#E8EDF2;border:2px solid #CBD5E0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;}
+.slot.f{background:#00BFA5;border-color:#00BFA5;box-shadow:0 3px 10px rgba(0,191,165,.3);}
+.slot.p{background:#FF6F00;border-color:#FF6F00;}
+.slot small{font-size:10px;color:#78909C;}
+.sbg{height:6px;border-radius:4px;background:#E8EDF2;overflow:hidden;margin-top:3px;}
+.sbar{height:100%;border-radius:4px;}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);color:#fff;border-radius:12px;padding:12px 24px;font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:9999;max-width:90vw;text-align:center;pointer-events:none;transition:opacity .3s;}
+.qw{text-align:center;}
+.qbox{display:inline-block;border:3px solid #00BFA5;border-radius:12px;overflow:hidden;}
+.qbox canvas,.qbox img{display:block;}
+.spin{width:28px;height:28px;border:3px solid #00BFA5;border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;margin:20px auto;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.msl{display:flex;gap:4px;align-items:center;margin-top:6px;}
+.ms{width:13px;height:13px;border-radius:3px;background:#E2E8F0;border:1.5px solid #CBD5E0;}
+.ms.f{background:#00BFA5;border-color:#00BFA5;}
+.gb{background:#FF6F00;border-radius:12px;padding:14px 16px;margin-bottom:12px;text-align:center;}
+.sbox{background:#EEF2FF;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <small>Sistema de Fidelización</small>
+  <h1>Smart Zen</h1>
+  <p>Mall Plaza · Módulo · Vivo</p>
+</div>
+<div class="tabs">
+  <button class="tab on" onclick="goTab('V',this)"><i>🏪</i><s>Vendedor</s></button>
+  <button class="tab" onclick="goTab('C',this)"><i>👤</i><s>Mi tarjeta</s></button>
+  <button class="tab" onclick="goTab('L',this)"><i>📋</i><s>Clientes</s></button>
+  <button class="tab" onclick="goTab('A',this)"><i>📊</i><s>Análisis</s></button>
+</div>
+
+<!-- ══════════ VENDEDOR ══════════ -->
+<div id="pgV" class="pg on">
+  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Panel Vendedor</h2>
+  <p style="color:#78909C;font-size:13px;margin-bottom:18px;">Registra una instalación de lámina.</p>
+  <div class="card blue">
+    <div class="g2">
+      <div><label class="L">Vendedor</label>
+        <select id="xV">
+          <option>Jenebien</option><option>Ignacia</option><option>Mariana</option>
+          <option>Gisella</option><option>Isidora</option><option>Estefanía</option>
+          <option>Madeline</option><option>Juan José</option><option>Astrid</option>
+        </select></div>
+      <div><label class="L">Sucursal</label>
+        <select id="xS"><option>Mall Plaza</option><option>Módulo</option><option>Vivo</option></select></div>
+    </div>
+    <label class="L">Tipo de lámina</label>
+    <select id="xT" style="margin-bottom:0">
+      <option>Lámina vidrio</option><option>Lámina hidrogel HD</option>
+      <option>Lámina hidrogel TPU</option><option>Lámina hidrogel antiespía</option>
+    </select>
+  </div>
+
+  <div id="fBuscar">
+    <label class="L">RUT del cliente</label>
+    <div class="row" style="margin-bottom:10px;">
+      <input type="text" id="vRut" placeholder="12.345.678-9" oninput="this.value=fmtRut(this.value)" onkeydown="if(event.key==='Enter')vBuscar()">
+      <button class="btn P bsm" onclick="vBuscar()">Buscar</button>
+    </div>
+    <div id="vErr" class="err hide"></div>
+    <!-- QR TIENDA -->
+    <div class="card" style="text-align:center;margin-top:8px;">
+      <p style="font-weight:700;color:#1A237E;font-size:13px;margin-bottom:4px;">📍 QR de la tienda</p>
+      <p style="color:#78909C;font-size:11px;margin-bottom:12px;">Imprime este QR y pégalo en el mostrador.</p>
+      <div id="qTiendaLoader" class="spin"></div>
+      <div id="qTienda" class="qbox hide"></div>
+      <br><button class="bo" onclick="dlQR('qTienda','QR-SmartZen-Tienda')">⬇ Descargar QR</button>
+      <p style="font-size:10px;color:#78909C;margin-top:8px;">Al escanear, el cliente abre directamente su tarjeta de fidelización</p>
+    </div>
+  </div>
+
+  <div id="fNuevo" class="hide">
+    <div class="card">
+      <p style="color:#FF6F00;font-weight:700;margin-bottom:10px;">🆕 Cliente nuevo</p>
+      <div id="vNErr" class="err hide"></div>
+      <label class="L">Nombre completo</label><input type="text" id="vNom" placeholder="Nombre">
+      <label class="L">Teléfono (opcional)</label><input type="tel" id="vTel" placeholder="+56 9 xxxx xxxx" style="margin-bottom:4px;">
+      <button class="btn A" onclick="vCrear()">Continuar →</button>
+      <button class="btn G" onclick="vReset()">← Cancelar</button>
+    </div>
+  </div>
+
+  <div id="fConf" class="hide">
+    <div class="card">
+      <p style="font-weight:800;color:#1A237E;font-size:15px;margin-bottom:14px;">Confirmar registro</p>
+      <div class="card" style="background:#F0F4F8;padding:10px 14px;margin-bottom:12px;">
+        <p id="cNom" style="font-weight:700;color:#1A237E;margin:0;"></p>
+        <p id="cRut" style="color:#78909C;font-size:13px;margin:2px 0 0;"></p>
+      </div>
+      <div class="g2" style="margin-bottom:10px;">
+        <div class="sbox"><label class="L" style="margin-bottom:2px;">Vendedor</label><p id="cV" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
+        <div class="sbox"><label class="L" style="margin-bottom:2px;">Sucursal</label><p id="cS" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
+      </div>
+      <div class="sbox" style="margin-bottom:14px;"><label class="L" style="margin-bottom:2px;">Tipo de lámina</label><p id="cT" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
+      <p style="color:#78909C;font-size:12px;text-align:center;margin-bottom:4px;">¿Los datos son correctos?</p>
+      <button class="btn A" onclick="vConfirmar()">✅ Confirmar y registrar</button>
+      <button class="btn G" onclick="vReset()">✕ Cancelar</button>
+    </div>
+  </div>
+
+  <div id="fGratis" class="hide">
+    <div class="gb"><div style="font-size:36px;">🎉</div>
+      <p style="color:#fff;font-weight:900;font-size:18px;margin:4px 0 2px;">¡LÁMINA GRATIS!</p>
+      <p style="color:#fff;font-size:13px;">Entrega la lámina sin costo.</p>
+    </div>
+  </div>
+
+  <div id="fRes" class="hide">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div><p id="rNom" style="font-weight:800;font-size:17px;color:#1A237E;margin:0;"></p>
+          <p id="rRut" style="color:#78909C;font-size:12px;margin:2px 0;"></p></div>
+        <div style="text-align:right;">
+          <span id="rCnt" style="font-size:36px;font-weight:900;color:#00BFA5;line-height:1;"></span>
+          <p style="color:#78909C;font-size:11px;margin:0;">láminas</p></div>
+      </div>
+      <div id="rSlots" class="slots"></div>
+      <p id="rMsg" style="text-align:center;color:#78909C;font-size:13px;margin:0 0 10px;"></p>
+      <button class="btn A" onclick="vOtra()">Registrar otra lámina ➕</button>
+      <button class="btn G" onclick="vReset()">Nuevo cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MI TARJETA ══════════ -->
+<div id="pgC" class="pg">
+  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Mi Tarjeta</h2>
+  <p style="color:#78909C;font-size:13px;margin-bottom:18px;">Programa de fidelización Smart Zen</p>
+  <div id="cIng">
+    <label class="L">Tu RUT</label>
+    <div class="row" style="margin-bottom:10px;">
+      <input type="text" id="cRutI" placeholder="12.345.678-9" oninput="this.value=fmtRut(this.value)" onkeydown="if(event.key==='Enter')cBuscar()">
+      <button class="btn P bsm" onclick="cBuscar()">Ver</button>
+    </div>
+    <div id="cIngErr" class="err hide"></div>
+  </div>
+  <div id="cNuevo" class="hide">
+    <div class="card">
+      <p style="color:#00BFA5;font-weight:700;margin-bottom:10px;">👋 ¡Regístrate para acumular láminas!</p>
+      <div id="cNErr" class="err hide"></div>
+      <label class="L">Tu nombre</label><input type="text" id="cNomI" placeholder="Nombre completo">
+      <label class="L">Teléfono (opcional)</label><input type="tel" id="cTelI" placeholder="+56 9 xxxx xxxx" style="margin-bottom:4px;">
+      <button class="btn A" onclick="cRegistrar()">Registrarme 🎉</button>
+      <button class="btn G" onclick="cReset()">← Volver</button>
+    </div>
+  </div>
+  <div id="cTar" class="hide">
+    <div class="card">
+      <p id="tNom" style="font-weight:900;font-size:20px;color:#1A237E;margin:0 0 2px;"></p>
+      <p id="tRut" style="color:#78909C;font-size:13px;margin:0;"></p>
+      <div style="margin:10px 0 0;display:flex;align-items:baseline;gap:6px;">
+        <span id="tCnt" style="font-size:48px;font-weight:900;color:#00BFA5;line-height:1;"></span>
+        <span style="color:#78909C;font-size:14px;">láminas instaladas</span>
+      </div>
+      <div id="tSlots" class="slots"></div>
+      <p id="tMsg" style="text-align:center;color:#78909C;font-size:13px;"></p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <p style="font-weight:700;color:#1A237E;font-size:13px;margin-bottom:12px;">📲 Muestra este QR al vendedor</p>
+      <div id="qCLoader" class="spin"></div>
+      <div id="qCliente" class="qbox hide"></div>
+      <p style="font-size:11px;color:#78909C;margin-top:10px;">El vendedor lo escanea para registrar tu lámina</p>
+    </div>
+    <div id="cHist" class="hide">
+      <div class="card">
+        <p style="font-weight:700;color:#1A237E;font-size:14px;margin-bottom:10px;">Mis instalaciones</p>
+        <div id="cHistList"></div>
+      </div>
+    </div>
+    <button class="btn G" onclick="cReset()">← Volver</button>
+  </div>
+</div>
+
+<!-- ══════════ CLIENTES ══════════ -->
+<div id="pgL" class="pg">
+  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Clientes</h2>
+  <p id="lCnt" style="color:#78909C;font-size:13px;margin-bottom:14px;"></p>
+  <input type="text" id="lBusq" placeholder="Buscar por nombre o RUT…" oninput="renderL()" style="margin-bottom:16px;">
+  <div id="lItems"></div>
+</div>
+
+<!-- ══════════ ANÁLISIS ══════════ -->
+<div id="pgA" class="pg">
+  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Análisis</h2>
+  <p id="aRes" style="color:#78909C;font-size:13px;margin-bottom:16px;"></p>
+  <div class="g2" style="margin-bottom:16px;">
+    <div><label class="L">Sucursal</label>
+      <select id="aSuc" onchange="renderA()" style="margin-bottom:0;">
+        <option>Todas</option><option>Mall Plaza</option><option>Módulo</option><option>Vivo</option>
+      </select></div>
+    <div><label class="L">Vendedor</label>
+      <select id="aVen" onchange="renderA()" style="margin-bottom:0;">
+        <option>Todos</option>
+        <option>Jenebien</option><option>Ignacia</option><option>Mariana</option>
+        <option>Gisella</option><option>Isidora</option><option>Estefanía</option>
+        <option>Madeline</option><option>Juan José</option><option>Astrid</option>
+      </select></div>
+  </div>
+  <div id="aCon"></div>
+</div>
+
+<div id="toast" class="toast hide"></div>
+
+<script>
+// ═══ CONFIG ═══
+const N=5, SK='smartzen_v4';
+const APP_URL = window.location.href.split('?')[0]; // URL real del archivo
+
+// ═══ DB ═══
+function db(){try{return JSON.parse(localStorage.getItem(SK))||{c:{},i:[]};}catch{return{c:{},i:[]};}}
+function save(d){localStorage.setItem(SK,JSON.stringify(d));}
+
+// ═══ RUT ═══
+function rk(r){return r.replace(/[^0-9kK]/g,'').toUpperCase();}
+function fmtRut(v){
+  const c=v.replace(/[^0-9kK]/g,'').toUpperCase().slice(0,9);
+  if(c.length<=1)return c;
+  return c.slice(0,-1).replace(/\B(?=(\d{3})+(?!\d))/g,'.')+'-'+c.slice(-1);
+}
+function valRut(r){
+  const c=rk(r);if(c.length<2)return false;
+  const b=c.slice(0,-1),dv=c.slice(-1);
+  let s=0,m=2;for(let i=b.length-1;i>=0;i--){s+=parseInt(b[i])*m;m=m===7?2:m+1;}
+  const r2=11-(s%11);return(r2===11?'0':r2===10?'K':String(r2))===dv;
+}
+
+// ═══ TABS ═══
+function goTab(id,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg'+id).classList.add('on');
+  btn.classList.add('on');
+  if(id==='L')renderL();
+  if(id==='A')renderA();
+}
+
+// ═══ TOAST ═══
+let tt;
+function toast(msg,col='#2E7D32'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=col;t.style.opacity='1';t.classList.remove('hide');
+  clearTimeout(tt);tt=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.classList.add('hide'),300);},3200);
+}
+
+// ═══ QR ═══
+// El QR de la tienda codifica la URL REAL de este archivo con ?v=cliente
+// El QR del cliente codifica la URL REAL con ?v=cliente&r=RUTKEY
+// Así al escanear se abre directamente la app en el estado correcto.
+
+function mkQR(containerId, loaderId, url){
+  const box=document.getElementById(containerId);
+  const ldr=document.getElementById(loaderId);
+  box.innerHTML='';box.classList.add('hide');
+  if(ldr)ldr.classList.remove('hide');
+  try{
+    new QRCode(box,{text:url,width:200,height:200,colorDark:'#1A237E',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(()=>{if(ldr)ldr.classList.add('hide');box.classList.remove('hide');},250);
+  }catch(e){
+    if(ldr)ldr.classList.add('hide');
+    box.innerHTML='<p style="color:#FF6F00;font-size:12px;padding:20px 10px;">Error al generar QR</p>';
+    box.classList.remove('hide');
+  }
+}
+function dlQR(id,name){
+  const box=document.getElementById(id);
+  const cv=box.querySelector('canvas');
+  const im=box.querySelector('img');
+  if(cv){const a=document.createElement('a');a.href=cv.toDataURL('image/png');a.download=name+'.png';a.click();}
+  else if(im){window.open(im.src,'_blank');}
+}
+
+// Detectar apertura desde QR al cargar la página
+window.addEventListener('load',()=>{
+  // Generar QR de tienda con la URL real
+  mkQR('qTienda','qTiendaLoader', APP_URL+'?v=cliente');
+
+  // Leer parámetros de URL
+  const p=new URLSearchParams(window.location.search);
+  const v=p.get('v'), r=p.get('r');
+  if(v==='cliente'){
+    // Activar pestaña Mi Tarjeta
+    document.querySelectorAll('.tab')[1].click();
+    if(r){
+      // Cargar cliente directo desde QR personal
+      const d=db();
+      const cl=d.c[r];
+      if(cl){cVerTarjeta(cl);}
+      else{
+        // RUT no existe aún, ir a registro
+        document.getElementById('cRutI').value=fmtRut(r);
+        document.getElementById('cIng').classList.add('hide');
+        document.getElementById('cNuevo').classList.remove('hide');
+      }
+    }
+  }
+});
+
+// ═══ SLOTS ═══
+function mkSlots(id,total){
+  const el=document.getElementById(id);if(!el)return;
+  const pos=total%N,ciclo=total>0&&pos===0;
+  el.innerHTML=Array.from({length:N}).map((_,i)=>{
+    const f=ciclo||i<pos,g=i===N-1;
+    return`<div class="slot${f?(g?' p':' f'):''}">${f?(g?'🎁':'📱'):'<small>'+(g?'GRATIS':i+1)+'</small>'}</div>`;
+  }).join('');
+}
+
+// ═══ VENDEDOR ═══
+let VP=null;
+function vShow(f){['Buscar','Nuevo','Conf','Gratis','Res'].forEach(x=>document.getElementById('f'+x).classList.toggle('hide',x!==f));}
+function vBuscar(){
+  const rut=document.getElementById('vRut').value;
+  const er=document.getElementById('vErr');er.classList.add('hide');
+  if(!valRut(rut)){er.textContent='RUT inválido. Ej: 12.345.678-9';er.classList.remove('hide');return;}
+  const d=db(),c=d.c[rk(rut)];
+  if(c){VP=c;vShowConf(c);}else vShow('Nuevo');
+}
+function vCrear(){
+  const nom=document.getElementById('vNom').value.trim();
+  const er=document.getElementById('vNErr');er.classList.add('hide');
+  if(!nom){er.textContent='Ingresa el nombre del cliente';er.classList.remove('hide');return;}
+  const rut=document.getElementById('vRut').value;
+  VP={rut:fmtRut(rut),nombre:nom,telefono:document.getElementById('vTel').value,laminas:0};
+  vShowConf(VP);
+}
+function vShowConf(c){
+  document.getElementById('cNom').textContent=c.nombre;
+  document.getElementById('cRut').textContent=c.rut;
+  document.getElementById('cV').textContent=document.getElementById('xV').value;
+  document.getElementById('cS').textContent=document.getElementById('xS').value;
+  document.getElementById('cT').textContent=document.getElementById('xT').value;
+  vShow('Conf');
+}
+function vConfirmar(){
+  const d=db(),key=rk(VP.rut);
+  const c=d.c[key]||{...VP,rut:fmtRut(VP.rut),laminas:0};
+  c.laminas=(c.laminas||0)+1;
+  const gratis=c.laminas%N===0;
+  d.c[key]=c;d.i=d.i||[];
+  d.i.unshift({id:Date.now(),fecha:new Date().toLocaleString('es-CL'),
+    clienteRut:c.rut,clienteNombre:c.nombre,
+    vendedor:document.getElementById('xV').value,
+    sucursal:document.getElementById('xS').value,
+    tipoLamina:document.getElementById('xT').value,
+    laminaNum:c.laminas,premio:gratis});
+  save(d);VP=c;
+  document.getElementById('rNom').textContent=c.nombre;
+  document.getElementById('rRut').textContent=c.rut;
+  document.getElementById('rCnt').textContent=c.laminas;
+  mkSlots('rSlots',c.laminas);
+  const f=N-(c.laminas%N);
+  document.getElementById('rMsg').textContent=f===N&&c.laminas>0?'¡Tienes una lámina gratis!':f===1?'🔥 ¡1 lámina más para la gratis!':`Faltan ${f} para la próxima gratis`;
+  document.getElementById('fGratis').classList.toggle('hide',!gratis);
+  vShow('Res');
+  toast(gratis?'🎁 ¡Lámina gratis registrada!':'✅ Lámina registrada',gratis?'#FF6F00':'#2E7D32');
+}
+function vOtra(){if(VP)vShowConf(VP);}
+function vReset(){
+  VP=null;
+  ['vRut','vNom','vTel'].forEach(i=>document.getElementById(i).value='');
+  ['vErr','vNErr'].forEach(i=>document.getElementById(i).classList.add('hide'));
+  document.getElementById('fGratis').classList.add('hide');
+  vShow('Buscar');
+}
+
+// ═══ MI TARJETA ═══
+function cShow(f){['Ing','Nuevo','Tar'].forEach(x=>document.getElementById('c'+x).classList.toggle('hide',x!==f));}
+function cBuscar(){
+  const rut=document.getElementById('cRutI').value;
+  const er=document.getElementById('cIngErr');er.classList.add('hide');
+  if(!valRut(rut)){er.textContent='RUT inválido. Ej: 12.345.678-9';er.classList.remove('hide');return;}
+  const d=db(),c=d.c[rk(rut)];
+  if(c)cVerTarjeta(c);else cShow('Nuevo');
+}
+function cRegistrar(){
+  const nom=document.getElementById('cNomI').value.trim();
+  const er=document.getElementById('cNErr');er.classList.add('hide');
+  if(!nom){er.textContent='Ingresa tu nombre';er.classList.remove('hide');return;}
+  const rut=document.getElementById('cRutI').value;
+  const d=db(),key=rk(rut);
+  const c={rut:fmtRut(rut),nombre:nom,telefono:document.getElementById('cTelI').value,laminas:0};
+  d.c[key]=c;save(d);cVerTarjeta(c);
+}
+function cVerTarjeta(c){
+  document.getElementById('tNom').textContent=c.nombre;
+  document.getElementById('tRut').textContent=c.rut;
+  document.getElementById('tCnt').textContent=c.laminas;
+  mkSlots('tSlots',c.laminas);
+  const f=N-(c.laminas%N);
+  document.getElementById('tMsg').textContent=
+    c.laminas%N===0&&c.laminas>0?'🎁 ¡Tienes una lámina gratis disponible!':
+    f===1?'🔥 ¡Solo 1 lámina más para la gratis!':`Faltan ${f} láminas para tu próxima gratis`;
+
+  // QR personal con URL real que incluye el RUT
+  mkQR('qCliente','qCLoader', APP_URL+'?v=cliente&r='+rk(c.rut));
+
+  // Historial
+  const d=db(),key=rk(c.rut);
+  const ins=(d.i||[]).filter(x=>rk(x.clienteRut)===key);
+  const hEl=document.getElementById('cHist');
+  if(ins.length>0){
+    document.getElementById('cHistList').innerHTML=ins.slice(0,20).map(x=>`
+      <div style="padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:12px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-weight:600;">${x.tipoLamina}</span>
+          <span style="color:${x.premio?'#FF6F00':'#78909C'};font-weight:${x.premio?700:400};">${x.premio?'🎁 GRATIS':'#'+x.laminaNum}</span>
+        </div>
+        <div style="color:#78909C;margin-top:2px;">${x.sucursal} · ${x.vendedor} · ${x.fecha}</div>
+      </div>`).join('');
+    hEl.classList.remove('hide');
+  }else hEl.classList.add('hide');
+  cShow('Tar');
+}
+function cReset(){
+  ['cRutI','cNomI','cTelI'].forEach(i=>document.getElementById(i).value='');
+  ['cIngErr','cNErr'].forEach(i=>document.getElementById(i).classList.add('hide'));
+  const b=document.getElementById('qCliente');b.innerHTML='';b.classList.add('hide');
+  document.getElementById('qCLoader').classList.remove('hide');
+  cShow('Ing');
+}
+
+// ═══ LISTADO ═══
+function renderL(){
+  const d=db(),busq=(document.getElementById('lBusq').value||'').toLowerCase();
+  const lista=Object.values(d.c).sort((a,b)=>b.laminas-a.laminas);
+  document.getElementById('lCnt').textContent=lista.length+' clientes registrados';
+  const fil=lista.filter(c=>c.nombre.toLowerCase().includes(busq)||c.rut.includes(busq));
+  document.getElementById('lItems').innerHTML=fil.length===0
+    ?'<p style="color:#78909C;text-align:center;margin-top:30px;">Sin resultados</p>'
+    :fil.map(c=>{
+      const pos=c.laminas%N,f=pos===0&&c.laminas>0?0:N-pos;
+      const dots=Array.from({length:N}).map((_,i)=>`<div class="ms${i<pos?' f':''}"></div>`).join('');
+      return`<div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="verC('${rk(c.rut)}')">
+        <div style="flex:1;">
+          <p style="font-weight:700;color:#1A237E;margin:0;font-size:15px;">${c.nombre}</p>
+          <p style="color:#78909C;font-size:12px;margin:2px 0 6px;">${c.rut}${c.telefono?' · '+c.telefono:''}</p>
+          <div class="msl">${dots}<span style="font-size:11px;color:#78909C;margin-left:4px;">${f===0&&c.laminas>0?'🎁 Gratis disponible':'Faltan '+f}</span></div>
+        </div>
+        <div style="text-align:right;margin-left:12px;">
+          <span style="font-size:30px;font-weight:900;color:#00BFA5;line-height:1;">${c.laminas}</span>
+          <p style="color:#78909C;font-size:10px;margin:0;">láminas</p>
+        </div>
+      </div>`;
+    }).join('');
+}
+function verC(key){
+  const d=db(),c=d.c[key];if(!c)return;
+  document.querySelectorAll('.tab')[1].click();
+  document.getElementById('cRutI').value=c.rut;
+  cVerTarjeta(c);
+}
+
+// ═══ ANÁLISIS ═══
+function renderA(){
+  const d=db();
+  const suc=document.getElementById('aSuc').value,ven=document.getElementById('aVen').value;
+  const data=(d.i||[]).filter(x=>(suc==='Todas'||x.sucursal===suc)&&(ven==='Todos'||x.vendedor===ven));
+  let pr=0,pT={},pV={},pS={};
+  data.forEach(x=>{pT[x.tipoLamina]=(pT[x.tipoLamina]||0)+1;pV[x.vendedor]=(pV[x.vendedor]||0)+1;pS[x.sucursal]=(pS[x.sucursal]||0)+1;if(x.premio)pr++;});
+  document.getElementById('aRes').textContent=`${data.length} instalaciones · ${pr} premios entregados`;
+  const sd=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]);
+  const blq=(t,dat,col)=>{
+    if(!dat.length)return'';
+    return`<div class="card" style="margin-bottom:12px;"><p style="font-weight:700;color:#1A237E;font-size:14px;margin-bottom:10px;">${t}</p>`
+      +dat.map(([k,v])=>`<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;"><span>${k}</span><span style="font-weight:700;">${v} <span style="color:#78909C;font-weight:400;">(${Math.round(v/data.length*100)}%)</span></span></div><div class="sbg"><div class="sbar" style="width:${v/data.length*100}%;background:${col};"></div></div></div>`).join('')+'</div>';
+  };
+  const ult=data.slice(0,10).map(x=>`<div style="padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:12px;"><div style="display:flex;justify-content:space-between;"><span style="font-weight:600;">${x.clienteNombre}</span><span style="color:#78909C;">${x.fecha}</span></div><div style="color:#78909C;margin-top:2px;">${x.tipoLamina} · ${x.vendedor} · ${x.sucursal}${x.premio?' <span style="color:#FF6F00;font-weight:700;">🎁 GRATIS</span>':''}</div></div>`).join('');
+  document.getElementById('aCon').innerHTML=data.length===0
+    ?'<p style="color:#78909C;text-align:center;margin-top:30px;">Sin datos aún.</p>'
+    :blq('Láminas por tipo',sd(pT),'#00BFA5')+blq('Por vendedor',sd(pV),'#1A237E')+blq('Por sucursal',sd(pS),'#FF6F00')
+      +(ult?`<div class="card"><p style="font-weight:700;color:#1A237E;font-size:14px;margin-bottom:10px;">Últimas 10 instalaciones</p>${ult}</div>`:'');
+}
+</script>
+</body>
+</html>
