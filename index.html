@@ -4,250 +4,381 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Smart Zen — Fidelización</title>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, push, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ═══ FIREBASE CONFIG ═══
+// Base de datos compartida entre todas las sucursales
+const app = initializeApp({
+  apiKey: "AIzaSyAVP41DU_fgcixyrKmVDAHFfS_Slh4UzQA",
+  authDomain: "smartzen-fidelizacion.firebaseapp.com",
+  databaseURL: "https://smartzen-fidelizacion-default-rtdb.firebaseio.com",
+  projectId: "smartzen-fidelizacion",
+  storageBucket: "smartzen-fidelizacion.firebasestorage.app",
+  messagingSenderId: "457086406629",
+  appId: "1:457086406629:web:98a08287c5c166a212690c"
+});
+const dbFire = getDatabase(app);
+
+// Exponer funciones de Firebase al scope global para uso desde JS no-module
+window.FBget = (path) => get(ref(dbFire, path));
+window.FBset = (path, data) => set(ref(dbFire, path), data);
+window.FBpush = (path, data) => push(ref(dbFire, path), data);
+window.FBremove = (path) => remove(ref(dbFire, path));
+window.FBonValue = (path, cb) => onValue(ref(dbFire, path), cb);
+window.firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<!-- QR library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F4F8;min-height:100vh;}
 input,select,button{font-family:inherit;font-size:14px;}
+/* Header */
 .hdr{background:#1A237E;padding:16px 20px 12px;text-align:center;}
 .hdr small{color:#00BFA5;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;display:block;}
 .hdr h1{color:#fff;font-size:24px;font-weight:900;margin:2px 0 0;}
 .hdr p{color:#90CAF9;font-size:11px;margin:2px 0 0;}
+/* Tabs — solo vendedor ve todas las pestañas; cliente ve solo su tarjeta */
 .tabs{display:flex;background:#fff;border-bottom:2px solid #F0F4F8;position:sticky;top:0;z-index:10;}
 .tab{flex:1;padding:10px 4px 8px;border:none;background:none;color:#78909C;border-bottom:3px solid transparent;cursor:pointer;}
 .tab.on{color:#1A237E;border-bottom-color:#00BFA5;font-weight:700;}
 .tab i{font-size:18px;display:block;font-style:normal;}
 .tab s{font-size:10px;margin-top:1px;display:block;text-decoration:none;}
+/* Pages */
 .pg{display:none;padding:20px 16px 60px;max-width:480px;margin:0 auto;}
 .pg.on{display:block;}
+/* Cards */
 .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:12px;}
 .blue{background:#EEF2FF;}
-lbl,label.L{font-size:11px;font-weight:700;color:#78909C;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
+/* Forms */
+label.L{font-size:11px;font-weight:700;color:#78909C;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;}
 input[type=text],input[type=tel],select{width:100%;padding:10px 13px;border-radius:10px;border:1.5px solid #CBD5E0;outline:none;background:#fff;margin-bottom:10px;}
 .row{display:flex;gap:8px;align-items:flex-start;}
 .row input{margin-bottom:0;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* Buttons */
 .btn{width:100%;padding:11px 18px;border-radius:10px;font-weight:700;font-size:14px;border:none;cursor:pointer;margin-top:8px;display:block;}
 .P{background:#1A237E;color:#fff;}
 .A{background:#00BFA5;color:#fff;}
 .G{background:#E8EDF2;color:#1A237E;}
+.R{background:#E53935;color:#fff;}
 .bsm{width:auto;padding:10px 18px;margin-top:0;}
 .bo{background:transparent;border:1.5px solid #00BFA5;color:#00BFA5;padding:7px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;margin-top:8px;}
+/* Alerts */
 .err{border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;font-size:13px;font-weight:600;background:rgba(255,111,0,.1);border:1.5px solid #FF6F00;color:#FF6F00;}
 .hide{display:none!important;}
+/* Slots */
 .slots{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap;}
 .slot{width:50px;height:68px;border-radius:10px;background:#E8EDF2;border:2px solid #CBD5E0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;}
 .slot.f{background:#00BFA5;border-color:#00BFA5;box-shadow:0 3px 10px rgba(0,191,165,.3);}
 .slot.p{background:#FF6F00;border-color:#FF6F00;}
 .slot small{font-size:10px;color:#78909C;}
+/* Stats */
 .sbg{height:6px;border-radius:4px;background:#E8EDF2;overflow:hidden;margin-top:3px;}
 .sbar{height:100%;border-radius:4px;}
+/* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);color:#fff;border-radius:12px;padding:12px 24px;font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:9999;max-width:90vw;text-align:center;pointer-events:none;transition:opacity .3s;}
-.qw{text-align:center;}
+/* QR */
 .qbox{display:inline-block;border:3px solid #00BFA5;border-radius:12px;overflow:hidden;}
 .qbox canvas,.qbox img{display:block;}
 .spin{width:28px;height:28px;border:3px solid #00BFA5;border-top-color:transparent;border-radius:50%;animation:sp .8s linear infinite;margin:20px auto;}
 @keyframes sp{to{transform:rotate(360deg);}}
+/* List */
 .msl{display:flex;gap:4px;align-items:center;margin-top:6px;}
 .ms{width:13px;height:13px;border-radius:3px;background:#E2E8F0;border:1.5px solid #CBD5E0;}
 .ms.f{background:#00BFA5;border-color:#00BFA5;}
+/* Misc */
 .gb{background:#FF6F00;border-radius:12px;padding:14px 16px;margin-bottom:12px;text-align:center;}
 .sbox{background:#EEF2FF;border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#00BFA5;display:inline-block;margin-right:6px;}
+.sync-dot.off{background:#E53935;}
 </style>
 </head>
 <body>
+
 <div class="hdr">
   <small>Sistema de Fidelización</small>
   <h1>Smart Zen</h1>
-  <p>Mall Plaza · Módulo · Vivo</p>
-</div>
-<div class="tabs">
-  <button class="tab on" onclick="goTab('V',this)"><i>🏪</i><s>Vendedor</s></button>
-  <button class="tab" onclick="goTab('C',this)"><i>👤</i><s>Mi tarjeta</s></button>
-  <button class="tab" onclick="goTab('L',this)"><i>📋</i><s>Clientes</s></button>
-  <button class="tab" onclick="goTab('A',this)"><i>📊</i><s>Análisis</s></button>
+  <p id="hdrSub">Mall Plaza · Módulo · Vivo</p>
 </div>
 
-<!-- ══════════ VENDEDOR ══════════ -->
-<div id="pgV" class="pg on">
-  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Panel Vendedor</h2>
-  <p style="color:#78909C;font-size:13px;margin-bottom:18px;">Registra una instalación de lámina.</p>
-  <div class="card blue">
-    <div class="g2">
+<!-- MODO CLIENTE: solo muestra Mi Tarjeta, sin navegación -->
+<div id="modoCliente" class="hide">
+  <div class="pg on" style="padding-top:20px;">
+    <div id="mcIng">
+      <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Mi Tarjeta</h2>
+      <p style="color:#78909C;font-size:13px;margin-bottom:18px;">Ingresa tu RUT para ver tus láminas acumuladas.</p>
+      <label class="L">Tu RUT</label>
+      <div class="row" style="margin-bottom:10px;">
+        <input type="text" id="mcRut" placeholder="12.345.678-9" oninput="this.value=fmtRut(this.value)" onkeydown="if(event.key==='Enter')mcBuscar()">
+        <button class="btn P bsm" onclick="mcBuscar()">Ver</button>
+      </div>
+      <div id="mcErr" class="err hide"></div>
+    </div>
+    <div id="mcNuevo" class="hide">
+      <div class="card">
+        <p style="color:#00BFA5;font-weight:700;margin-bottom:10px;">👋 ¡Regístrate para acumular láminas!</p>
+        <div id="mcNErr" class="err hide"></div>
+        <label class="L">Tu nombre</label><input type="text" id="mcNom" placeholder="Nombre completo">
+        <label class="L">Teléfono (opcional)</label><input type="tel" id="mcTel" placeholder="+56 9 xxxx xxxx" style="margin-bottom:4px;">
+        <button class="btn A" onclick="mcRegistrar()">Registrarme 🎉</button>
+        <button class="btn G" onclick="mcReset()">← Volver</button>
+      </div>
+    </div>
+    <div id="mcTar" class="hide">
+      <div class="card">
+        <p id="mcTNom" style="font-weight:900;font-size:20px;color:#1A237E;margin:0 0 2px;"></p>
+        <p id="mcTRut" style="color:#78909C;font-size:13px;margin:0;"></p>
+        <div style="margin:10px 0 0;display:flex;align-items:baseline;gap:6px;">
+          <span id="mcTCnt" style="font-size:48px;font-weight:900;color:#00BFA5;line-height:1;"></span>
+          <span style="color:#78909C;font-size:14px;">láminas instaladas</span>
+        </div>
+        <div id="mcTSlots" class="slots"></div>
+        <p id="mcTMsg" style="text-align:center;color:#78909C;font-size:13px;"></p>
+      </div>
+      <div class="card" style="text-align:center;">
+        <p style="font-weight:700;color:#1A237E;font-size:13px;margin-bottom:12px;">📲 Muestra este QR al vendedor</p>
+        <div id="mcQLoader" class="spin"></div>
+        <div id="mcQBox" class="qbox hide"></div>
+        <p style="font-size:11px;color:#78909C;margin-top:10px;">El vendedor lo escanea para registrar tu lámina</p>
+      </div>
+      <div id="mcHist" class="hide">
+        <div class="card">
+          <p style="font-weight:700;color:#1A237E;font-size:14px;margin-bottom:10px;">Mis instalaciones</p>
+          <div id="mcHistList"></div>
+        </div>
+      </div>
+      <button class="btn G" onclick="mcReset()">← Volver</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODO VENDEDOR: acceso completo con tabs -->
+<div id="modoVendedor">
+  <div class="tabs">
+    <button class="tab on" onclick="goTab('V',this)"><i>🏪</i><s>Vendedor</s></button>
+    <button class="tab" onclick="goTab('C',this)"><i>📋</i><s>Clientes</s></button>
+    <button class="tab" onclick="goTab('A',this)"><i>📊</i><s>Análisis</s></button>
+  </div>
+
+  <!-- ══ VENDEDOR ══ -->
+  <div id="pgV" class="pg on">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <h2 style="color:#1A237E;font-size:19px;">Panel Vendedor</h2>
+      <span id="syncStatus" style="font-size:11px;color:#78909C;"><span class="sync-dot"></span>Conectado</span>
+    </div>
+    <p style="color:#78909C;font-size:13px;margin-bottom:18px;">Registra una instalación de lámina.</p>
+
+    <div class="card blue">
+      <div class="g2">
+        <div><label class="L">Vendedor</label>
+          <select id="xV">
+            <option>Jenebien</option><option>Ignacia</option><option>Mariana</option>
+            <option>Gisella</option><option>Isidora</option><option>Estefanía</option>
+            <option>Madeline</option><option>Juan José</option><option>Astrid</option>
+          </select></div>
+        <div><label class="L">Sucursal</label>
+          <select id="xS"><option>Mall Plaza</option><option>Módulo</option><option>Vivo</option></select></div>
+      </div>
+      <label class="L">Tipo de lámina</label>
+      <select id="xT" style="margin-bottom:0;">
+        <option>Lámina vidrio</option><option>Lámina hidrogel HD</option>
+        <option>Lámina hidrogel TPU</option><option>Lámina hidrogel antiespía</option>
+      </select>
+    </div>
+
+    <div id="fBuscar">
+      <label class="L">RUT del cliente</label>
+      <div class="row" style="margin-bottom:10px;">
+        <input type="text" id="vRut" placeholder="12.345.678-9" oninput="this.value=fmtRut(this.value)" onkeydown="if(event.key==='Enter')vBuscar()">
+        <button class="btn P bsm" onclick="vBuscar()">Buscar</button>
+      </div>
+      <div id="vErr" class="err hide"></div>
+      <div class="card" style="text-align:center;margin-top:8px;">
+        <p style="font-weight:700;color:#1A237E;font-size:13px;margin-bottom:4px;">📍 QR de la tienda</p>
+        <p style="color:#78909C;font-size:11px;margin-bottom:12px;">Imprime este QR y pégalo en el mostrador. El cliente lo escanea para abrir su tarjeta.</p>
+        <div id="qTLoader" class="spin"></div>
+        <div id="qTienda" class="qbox hide"></div>
+        <br><button class="bo" onclick="dlQR('qTienda','QR-SmartZen-Tienda')">⬇ Descargar QR</button>
+      </div>
+    </div>
+
+    <div id="fNuevo" class="hide">
+      <div class="card">
+        <p style="color:#FF6F00;font-weight:700;margin-bottom:10px;">🆕 Cliente nuevo</p>
+        <div id="vNErr" class="err hide"></div>
+        <label class="L">Nombre completo</label><input type="text" id="vNom" placeholder="Nombre">
+        <label class="L">Teléfono (opcional)</label><input type="tel" id="vTel" placeholder="+56 9 xxxx xxxx" style="margin-bottom:4px;">
+        <button class="btn A" onclick="vCrear()">Continuar →</button>
+        <button class="btn G" onclick="vReset()">← Cancelar</button>
+      </div>
+    </div>
+
+    <div id="fConf" class="hide">
+      <div class="card">
+        <p style="font-weight:800;color:#1A237E;font-size:15px;margin-bottom:14px;">Confirmar registro</p>
+        <div class="card" style="background:#F0F4F8;padding:10px 14px;margin-bottom:12px;">
+          <p id="cNom" style="font-weight:700;color:#1A237E;margin:0;"></p>
+          <p id="cRut" style="color:#78909C;font-size:13px;margin:2px 0 0;"></p>
+        </div>
+        <div class="g2" style="margin-bottom:10px;">
+          <div class="sbox"><label class="L" style="margin-bottom:2px;">Vendedor</label><p id="cV" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
+          <div class="sbox"><label class="L" style="margin-bottom:2px;">Sucursal</label><p id="cS" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
+        </div>
+        <div class="sbox" style="margin-bottom:14px;"><label class="L" style="margin-bottom:2px;">Tipo de lámina</label><p id="cT" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
+        <p style="color:#78909C;font-size:12px;text-align:center;margin-bottom:4px;">¿Los datos son correctos?</p>
+        <button class="btn A" onclick="vConfirmar()">✅ Confirmar y registrar</button>
+        <button class="btn G" onclick="vReset()">✕ Cancelar</button>
+      </div>
+    </div>
+
+    <div id="fGratis" class="hide">
+      <div class="gb"><div style="font-size:36px;">🎉</div>
+        <p style="color:#fff;font-weight:900;font-size:18px;margin:4px 0 2px;">¡LÁMINA GRATIS!</p>
+        <p style="color:#fff;font-size:13px;">Entrega la lámina sin costo.</p>
+      </div>
+    </div>
+
+    <div id="fRes" class="hide">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div><p id="rNom" style="font-weight:800;font-size:17px;color:#1A237E;margin:0;"></p>
+            <p id="rRut" style="color:#78909C;font-size:12px;margin:2px 0;"></p></div>
+          <div style="text-align:right;">
+            <span id="rCnt" style="font-size:36px;font-weight:900;color:#00BFA5;line-height:1;"></span>
+            <p style="color:#78909C;font-size:11px;margin:0;">láminas</p></div>
+        </div>
+        <div id="rSlots" class="slots"></div>
+        <p id="rMsg" style="text-align:center;color:#78909C;font-size:13px;margin:0 0 10px;"></p>
+        <button class="btn A" onclick="vOtra()">Registrar otra lámina ➕</button>
+        <button class="btn R" onclick="vEliminarUltima()" style="margin-top:6px;">↩ Eliminar última lámina</button>
+        <button class="btn G" onclick="vReset()">Nuevo cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ CLIENTES ══ -->
+  <div id="pgC" class="pg">
+    <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Clientes</h2>
+    <p id="lCnt" style="color:#78909C;font-size:13px;margin-bottom:14px;"></p>
+    <input type="text" id="lBusq" placeholder="Buscar por nombre o RUT…" oninput="renderL()" style="margin-bottom:16px;">
+    <div id="lItems"></div>
+  </div>
+
+  <!-- ══ ANÁLISIS ══ -->
+  <div id="pgA" class="pg">
+    <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Análisis</h2>
+    <p id="aRes" style="color:#78909C;font-size:13px;margin-bottom:16px;"></p>
+    <div class="g2" style="margin-bottom:16px;">
+      <div><label class="L">Sucursal</label>
+        <select id="aSuc" onchange="renderA()" style="margin-bottom:0;">
+          <option>Todas</option><option>Mall Plaza</option><option>Módulo</option><option>Vivo</option>
+        </select></div>
       <div><label class="L">Vendedor</label>
-        <select id="xV">
+        <select id="aVen" onchange="renderA()" style="margin-bottom:0;">
+          <option>Todos</option>
           <option>Jenebien</option><option>Ignacia</option><option>Mariana</option>
           <option>Gisella</option><option>Isidora</option><option>Estefanía</option>
           <option>Madeline</option><option>Juan José</option><option>Astrid</option>
         </select></div>
-      <div><label class="L">Sucursal</label>
-        <select id="xS"><option>Mall Plaza</option><option>Módulo</option><option>Vivo</option></select></div>
     </div>
-    <label class="L">Tipo de lámina</label>
-    <select id="xT" style="margin-bottom:0">
-      <option>Lámina vidrio</option><option>Lámina hidrogel HD</option>
-      <option>Lámina hidrogel TPU</option><option>Lámina hidrogel antiespía</option>
-    </select>
+    <div id="aCon"></div>
   </div>
-
-  <div id="fBuscar">
-    <label class="L">RUT del cliente</label>
-    <div class="row" style="margin-bottom:10px;">
-      <input type="text" id="vRut" placeholder="12.345.678-9" oninput="this.value=fmtRut(this.value)" onkeydown="if(event.key==='Enter')vBuscar()">
-      <button class="btn P bsm" onclick="vBuscar()">Buscar</button>
-    </div>
-    <div id="vErr" class="err hide"></div>
-    <!-- QR TIENDA -->
-    <div class="card" style="text-align:center;margin-top:8px;">
-      <p style="font-weight:700;color:#1A237E;font-size:13px;margin-bottom:4px;">📍 QR de la tienda</p>
-      <p style="color:#78909C;font-size:11px;margin-bottom:12px;">Imprime este QR y pégalo en el mostrador.</p>
-      <div id="qTiendaLoader" class="spin"></div>
-      <div id="qTienda" class="qbox hide"></div>
-      <br><button class="bo" onclick="dlQR('qTienda','QR-SmartZen-Tienda')">⬇ Descargar QR</button>
-      <p style="font-size:10px;color:#78909C;margin-top:8px;">Al escanear, el cliente abre directamente su tarjeta de fidelización</p>
-    </div>
-  </div>
-
-  <div id="fNuevo" class="hide">
-    <div class="card">
-      <p style="color:#FF6F00;font-weight:700;margin-bottom:10px;">🆕 Cliente nuevo</p>
-      <div id="vNErr" class="err hide"></div>
-      <label class="L">Nombre completo</label><input type="text" id="vNom" placeholder="Nombre">
-      <label class="L">Teléfono (opcional)</label><input type="tel" id="vTel" placeholder="+56 9 xxxx xxxx" style="margin-bottom:4px;">
-      <button class="btn A" onclick="vCrear()">Continuar →</button>
-      <button class="btn G" onclick="vReset()">← Cancelar</button>
-    </div>
-  </div>
-
-  <div id="fConf" class="hide">
-    <div class="card">
-      <p style="font-weight:800;color:#1A237E;font-size:15px;margin-bottom:14px;">Confirmar registro</p>
-      <div class="card" style="background:#F0F4F8;padding:10px 14px;margin-bottom:12px;">
-        <p id="cNom" style="font-weight:700;color:#1A237E;margin:0;"></p>
-        <p id="cRut" style="color:#78909C;font-size:13px;margin:2px 0 0;"></p>
-      </div>
-      <div class="g2" style="margin-bottom:10px;">
-        <div class="sbox"><label class="L" style="margin-bottom:2px;">Vendedor</label><p id="cV" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
-        <div class="sbox"><label class="L" style="margin-bottom:2px;">Sucursal</label><p id="cS" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
-      </div>
-      <div class="sbox" style="margin-bottom:14px;"><label class="L" style="margin-bottom:2px;">Tipo de lámina</label><p id="cT" style="font-weight:700;color:#1A237E;font-size:13px;margin:0;"></p></div>
-      <p style="color:#78909C;font-size:12px;text-align:center;margin-bottom:4px;">¿Los datos son correctos?</p>
-      <button class="btn A" onclick="vConfirmar()">✅ Confirmar y registrar</button>
-      <button class="btn G" onclick="vReset()">✕ Cancelar</button>
-    </div>
-  </div>
-
-  <div id="fGratis" class="hide">
-    <div class="gb"><div style="font-size:36px;">🎉</div>
-      <p style="color:#fff;font-weight:900;font-size:18px;margin:4px 0 2px;">¡LÁMINA GRATIS!</p>
-      <p style="color:#fff;font-size:13px;">Entrega la lámina sin costo.</p>
-    </div>
-  </div>
-
-  <div id="fRes" class="hide">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-        <div><p id="rNom" style="font-weight:800;font-size:17px;color:#1A237E;margin:0;"></p>
-          <p id="rRut" style="color:#78909C;font-size:12px;margin:2px 0;"></p></div>
-        <div style="text-align:right;">
-          <span id="rCnt" style="font-size:36px;font-weight:900;color:#00BFA5;line-height:1;"></span>
-          <p style="color:#78909C;font-size:11px;margin:0;">láminas</p></div>
-      </div>
-      <div id="rSlots" class="slots"></div>
-      <p id="rMsg" style="text-align:center;color:#78909C;font-size:13px;margin:0 0 10px;"></p>
-      <button class="btn A" onclick="vOtra()">Registrar otra lámina ➕</button>
-      <button class="btn G" onclick="vReset()">Nuevo cliente</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════ MI TARJETA ══════════ -->
-<div id="pgC" class="pg">
-  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Mi Tarjeta</h2>
-  <p style="color:#78909C;font-size:13px;margin-bottom:18px;">Programa de fidelización Smart Zen</p>
-  <div id="cIng">
-    <label class="L">Tu RUT</label>
-    <div class="row" style="margin-bottom:10px;">
-      <input type="text" id="cRutI" placeholder="12.345.678-9" oninput="this.value=fmtRut(this.value)" onkeydown="if(event.key==='Enter')cBuscar()">
-      <button class="btn P bsm" onclick="cBuscar()">Ver</button>
-    </div>
-    <div id="cIngErr" class="err hide"></div>
-  </div>
-  <div id="cNuevo" class="hide">
-    <div class="card">
-      <p style="color:#00BFA5;font-weight:700;margin-bottom:10px;">👋 ¡Regístrate para acumular láminas!</p>
-      <div id="cNErr" class="err hide"></div>
-      <label class="L">Tu nombre</label><input type="text" id="cNomI" placeholder="Nombre completo">
-      <label class="L">Teléfono (opcional)</label><input type="tel" id="cTelI" placeholder="+56 9 xxxx xxxx" style="margin-bottom:4px;">
-      <button class="btn A" onclick="cRegistrar()">Registrarme 🎉</button>
-      <button class="btn G" onclick="cReset()">← Volver</button>
-    </div>
-  </div>
-  <div id="cTar" class="hide">
-    <div class="card">
-      <p id="tNom" style="font-weight:900;font-size:20px;color:#1A237E;margin:0 0 2px;"></p>
-      <p id="tRut" style="color:#78909C;font-size:13px;margin:0;"></p>
-      <div style="margin:10px 0 0;display:flex;align-items:baseline;gap:6px;">
-        <span id="tCnt" style="font-size:48px;font-weight:900;color:#00BFA5;line-height:1;"></span>
-        <span style="color:#78909C;font-size:14px;">láminas instaladas</span>
-      </div>
-      <div id="tSlots" class="slots"></div>
-      <p id="tMsg" style="text-align:center;color:#78909C;font-size:13px;"></p>
-    </div>
-    <div class="card" style="text-align:center;">
-      <p style="font-weight:700;color:#1A237E;font-size:13px;margin-bottom:12px;">📲 Muestra este QR al vendedor</p>
-      <div id="qCLoader" class="spin"></div>
-      <div id="qCliente" class="qbox hide"></div>
-      <p style="font-size:11px;color:#78909C;margin-top:10px;">El vendedor lo escanea para registrar tu lámina</p>
-    </div>
-    <div id="cHist" class="hide">
-      <div class="card">
-        <p style="font-weight:700;color:#1A237E;font-size:14px;margin-bottom:10px;">Mis instalaciones</p>
-        <div id="cHistList"></div>
-      </div>
-    </div>
-    <button class="btn G" onclick="cReset()">← Volver</button>
-  </div>
-</div>
-
-<!-- ══════════ CLIENTES ══════════ -->
-<div id="pgL" class="pg">
-  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Clientes</h2>
-  <p id="lCnt" style="color:#78909C;font-size:13px;margin-bottom:14px;"></p>
-  <input type="text" id="lBusq" placeholder="Buscar por nombre o RUT…" oninput="renderL()" style="margin-bottom:16px;">
-  <div id="lItems"></div>
-</div>
-
-<!-- ══════════ ANÁLISIS ══════════ -->
-<div id="pgA" class="pg">
-  <h2 style="color:#1A237E;font-size:19px;margin-bottom:4px;">Análisis</h2>
-  <p id="aRes" style="color:#78909C;font-size:13px;margin-bottom:16px;"></p>
-  <div class="g2" style="margin-bottom:16px;">
-    <div><label class="L">Sucursal</label>
-      <select id="aSuc" onchange="renderA()" style="margin-bottom:0;">
-        <option>Todas</option><option>Mall Plaza</option><option>Módulo</option><option>Vivo</option>
-      </select></div>
-    <div><label class="L">Vendedor</label>
-      <select id="aVen" onchange="renderA()" style="margin-bottom:0;">
-        <option>Todos</option>
-        <option>Jenebien</option><option>Ignacia</option><option>Mariana</option>
-        <option>Gisella</option><option>Isidora</option><option>Estefanía</option>
-        <option>Madeline</option><option>Juan José</option><option>Astrid</option>
-      </select></div>
-  </div>
-  <div id="aCon"></div>
 </div>
 
 <div id="toast" class="toast hide"></div>
 
 <script>
-// ═══ CONFIG ═══
-const N=5, SK='smartzen_v4';
-const APP_URL = window.location.href.split('?')[0]; // URL real del archivo
+const N = 5;
+const APP_URL = window.location.href.split('?')[0];
 
-// ═══ DB ═══
-function db(){try{return JSON.parse(localStorage.getItem(SK))||{c:{},i:[]};}catch{return{c:{},i:[]};}}
-function save(d){localStorage.setItem(SK,JSON.stringify(d));}
+// ═══ FIREBASE HELPERS ═══
+// Usamos localStorage como caché local mientras Firebase carga
+let localDB = { c:{}, i:[] };
+
+function fbReady(cb) {
+  if (window.firebaseReady) cb();
+  else window.addEventListener('firebaseReady', cb);
+}
+
+// Cargar todos los datos desde Firebase al iniciar
+function cargarDesdeFirebase() {
+  fbReady(async () => {
+    try {
+      const snap = await window.FBget('smartzen');
+      if (snap.exists()) {
+        localDB = snap.val();
+        localDB.c = localDB.c || {};
+        localDB.i = localDB.i ? Object.values(localDB.i) : [];
+      }
+      actualizarSync(true);
+      // Recargar vista si está en listado o análisis
+      const pgC = document.getElementById('pgC');
+      const pgA = document.getElementById('pgA');
+      if (pgC && pgC.classList.contains('on')) renderL();
+      if (pgA && pgA.classList.contains('on')) renderA();
+    } catch(e) {
+      actualizarSync(false);
+    }
+  });
+}
+
+async function guardarCliente(key, cliente) {
+  localDB.c[key] = cliente;
+  fbReady(() => window.FBset('smartzen/c/'+key, cliente));
+}
+
+async function guardarInstalacion(ins) {
+  localDB.i = localDB.i || [];
+  localDB.i.unshift(ins);
+  fbReady(() => window.FBpush('smartzen/i', ins));
+}
+
+async function eliminarUltimaInstalacion(clienteKey) {
+  // Buscar la instalación más reciente de este cliente
+  const ins = (localDB.i || []);
+  const idx = ins.findIndex(x => rk(x.clienteRut) === clienteKey);
+  if (idx === -1) return false;
+  // Restar lámina al cliente
+  if (localDB.c[clienteKey]) {
+    localDB.c[clienteKey].laminas = Math.max(0, (localDB.c[clienteKey].laminas || 1) - 1);
+    await guardarCliente(clienteKey, localDB.c[clienteKey]);
+  }
+  // Eliminar de la lista local
+  const insEliminada = ins[idx];
+  localDB.i.splice(idx, 1);
+  // Eliminar de Firebase (necesitamos la key de Firebase)
+  fbReady(async () => {
+    try {
+      const snap = await window.FBget('smartzen/i');
+      if (snap.exists()) {
+        const data = snap.val();
+        for (const [k, v] of Object.entries(data)) {
+          if (v.id === insEliminada.id) {
+            await window.FBremove('smartzen/i/'+k);
+            break;
+          }
+        }
+      }
+    } catch(e) {}
+  });
+  return true;
+}
+
+function actualizarSync(ok) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.innerHTML = ok
+    ? '<span class="sync-dot"></span>Conectado'
+    : '<span class="sync-dot off"></span>Sin conexión';
+}
 
 // ═══ RUT ═══
 function rk(r){return r.replace(/[^0-9kK]/g,'').toUpperCase();}
@@ -269,8 +400,8 @@ function goTab(id,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('pg'+id).classList.add('on');
   btn.classList.add('on');
-  if(id==='L')renderL();
-  if(id==='A')renderA();
+  if(id==='C'){cargarDesdeFirebase();setTimeout(renderL,500);}
+  if(id==='A'){cargarDesdeFirebase();setTimeout(renderA,500);}
 }
 
 // ═══ TOAST ═══
@@ -278,17 +409,14 @@ let tt;
 function toast(msg,col='#2E7D32'){
   const t=document.getElementById('toast');
   t.textContent=msg;t.style.background=col;t.style.opacity='1';t.classList.remove('hide');
-  clearTimeout(tt);tt=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.classList.add('hide'),300);},3200);
+  clearTimeout(tt);tt=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.classList.add('hide'),300);},3500);
 }
 
 // ═══ QR ═══
-// El QR de la tienda codifica la URL REAL de este archivo con ?v=cliente
-// El QR del cliente codifica la URL REAL con ?v=cliente&r=RUTKEY
-// Así al escanear se abre directamente la app en el estado correcto.
-
 function mkQR(containerId, loaderId, url){
   const box=document.getElementById(containerId);
   const ldr=document.getElementById(loaderId);
+  if(!box)return;
   box.innerHTML='';box.classList.add('hide');
   if(ldr)ldr.classList.remove('hide');
   try{
@@ -296,7 +424,7 @@ function mkQR(containerId, loaderId, url){
     setTimeout(()=>{if(ldr)ldr.classList.add('hide');box.classList.remove('hide');},250);
   }catch(e){
     if(ldr)ldr.classList.add('hide');
-    box.innerHTML='<p style="color:#FF6F00;font-size:12px;padding:20px 10px;">Error al generar QR</p>';
+    box.innerHTML='<p style="padding:20px;color:#FF6F00;font-size:12px;">Error al generar QR</p>';
     box.classList.remove('hide');
   }
 }
@@ -308,32 +436,6 @@ function dlQR(id,name){
   else if(im){window.open(im.src,'_blank');}
 }
 
-// Detectar apertura desde QR al cargar la página
-window.addEventListener('load',()=>{
-  // Generar QR de tienda con la URL real
-  mkQR('qTienda','qTiendaLoader', APP_URL+'?v=cliente');
-
-  // Leer parámetros de URL
-  const p=new URLSearchParams(window.location.search);
-  const v=p.get('v'), r=p.get('r');
-  if(v==='cliente'){
-    // Activar pestaña Mi Tarjeta
-    document.querySelectorAll('.tab')[1].click();
-    if(r){
-      // Cargar cliente directo desde QR personal
-      const d=db();
-      const cl=d.c[r];
-      if(cl){cVerTarjeta(cl);}
-      else{
-        // RUT no existe aún, ir a registro
-        document.getElementById('cRutI').value=fmtRut(r);
-        document.getElementById('cIng').classList.add('hide');
-        document.getElementById('cNuevo').classList.remove('hide');
-      }
-    }
-  }
-});
-
 // ═══ SLOTS ═══
 function mkSlots(id,total){
   const el=document.getElementById(id);if(!el)return;
@@ -344,6 +446,66 @@ function mkSlots(id,total){
   }).join('');
 }
 
+// ═══ MODO CLIENTE (abierto desde QR) ═══
+// Solo ve su tarjeta, sin acceso a panel vendedor ni datos de otros clientes
+function mcBuscar(){
+  const rut=document.getElementById('mcRut').value;
+  const er=document.getElementById('mcErr');er.classList.add('hide');
+  if(!valRut(rut)){er.textContent='RUT inválido. Ej: 12.345.678-9';er.classList.remove('hide');return;}
+  const c=localDB.c[rk(rut)];
+  if(c)mcVerTarjeta(c);
+  else{document.getElementById('mcIng').classList.add('hide');document.getElementById('mcNuevo').classList.remove('hide');}
+}
+async function mcRegistrar(){
+  const nom=document.getElementById('mcNom').value.trim();
+  const er=document.getElementById('mcNErr');er.classList.add('hide');
+  if(!nom){er.textContent='Ingresa tu nombre';er.classList.remove('hide');return;}
+  const rut=document.getElementById('mcRut').value;
+  const key=rk(rut);
+  const c={rut:fmtRut(rut),nombre:nom,telefono:document.getElementById('mcTel').value,laminas:0};
+  await guardarCliente(key,c);
+  mcVerTarjeta(c);
+}
+function mcVerTarjeta(c){
+  document.getElementById('mcIng').classList.add('hide');
+  document.getElementById('mcNuevo').classList.add('hide');
+  document.getElementById('mcTar').classList.remove('hide');
+  document.getElementById('mcTNom').textContent=c.nombre;
+  document.getElementById('mcTRut').textContent=c.rut;
+  document.getElementById('mcTCnt').textContent=c.laminas;
+  mkSlots('mcTSlots',c.laminas);
+  const f=N-(c.laminas%N);
+  document.getElementById('mcTMsg').textContent=
+    c.laminas%N===0&&c.laminas>0?'🎁 ¡Tienes una lámina gratis disponible!':
+    f===1?'🔥 ¡Solo 1 lámina más para la gratis!':`Faltan ${f} láminas para tu próxima gratis`;
+  // QR personal — URL que abre app directamente en esta tarjeta
+  mkQR('mcQBox','mcQLoader', APP_URL+'?v=cliente&r='+rk(c.rut));
+  // Historial
+  const ins=(localDB.i||[]).filter(x=>rk(x.clienteRut)===rk(c.rut));
+  const hEl=document.getElementById('mcHist');
+  if(ins.length>0){
+    document.getElementById('mcHistList').innerHTML=ins.slice(0,20).map(x=>`
+      <div style="padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:12px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span style="font-weight:600;">${x.tipoLamina}</span>
+          <span style="color:${x.premio?'#FF6F00':'#78909C'};font-weight:${x.premio?700:400};">${x.premio?'🎁 GRATIS':'#'+x.laminaNum}</span>
+        </div>
+        <div style="color:#78909C;margin-top:2px;">${x.sucursal} · ${x.vendedor} · ${x.fecha}</div>
+      </div>`).join('');
+    hEl.classList.remove('hide');
+  }else hEl.classList.add('hide');
+}
+function mcReset(){
+  document.getElementById('mcRut').value='';
+  document.getElementById('mcNom').value='';
+  document.getElementById('mcTel').value='';
+  document.getElementById('mcErr').classList.add('hide');
+  document.getElementById('mcNErr').classList.add('hide');
+  document.getElementById('mcIng').classList.remove('hide');
+  document.getElementById('mcNuevo').classList.add('hide');
+  document.getElementById('mcTar').classList.add('hide');
+}
+
 // ═══ VENDEDOR ═══
 let VP=null;
 function vShow(f){['Buscar','Nuevo','Conf','Gratis','Res'].forEach(x=>document.getElementById('f'+x).classList.toggle('hide',x!==f));}
@@ -351,15 +513,14 @@ function vBuscar(){
   const rut=document.getElementById('vRut').value;
   const er=document.getElementById('vErr');er.classList.add('hide');
   if(!valRut(rut)){er.textContent='RUT inválido. Ej: 12.345.678-9';er.classList.remove('hide');return;}
-  const d=db(),c=d.c[rk(rut)];
+  const c=localDB.c[rk(rut)];
   if(c){VP=c;vShowConf(c);}else vShow('Nuevo');
 }
 function vCrear(){
   const nom=document.getElementById('vNom').value.trim();
   const er=document.getElementById('vNErr');er.classList.add('hide');
   if(!nom){er.textContent='Ingresa el nombre del cliente';er.classList.remove('hide');return;}
-  const rut=document.getElementById('vRut').value;
-  VP={rut:fmtRut(rut),nombre:nom,telefono:document.getElementById('vTel').value,laminas:0};
+  VP={rut:fmtRut(document.getElementById('vRut').value),nombre:nom,telefono:document.getElementById('vTel').value,laminas:0};
   vShowConf(VP);
 }
 function vShowConf(c){
@@ -370,19 +531,22 @@ function vShowConf(c){
   document.getElementById('cT').textContent=document.getElementById('xT').value;
   vShow('Conf');
 }
-function vConfirmar(){
-  const d=db(),key=rk(VP.rut);
-  const c=d.c[key]||{...VP,rut:fmtRut(VP.rut),laminas:0};
+async function vConfirmar(){
+  const key=rk(VP.rut);
+  const c=localDB.c[key]||{...VP,rut:fmtRut(VP.rut),laminas:0};
   c.laminas=(c.laminas||0)+1;
   const gratis=c.laminas%N===0;
-  d.c[key]=c;d.i=d.i||[];
-  d.i.unshift({id:Date.now(),fecha:new Date().toLocaleString('es-CL'),
+  await guardarCliente(key,c);
+  const ins={
+    id:Date.now(),fecha:new Date().toLocaleString('es-CL'),
     clienteRut:c.rut,clienteNombre:c.nombre,
     vendedor:document.getElementById('xV').value,
     sucursal:document.getElementById('xS').value,
     tipoLamina:document.getElementById('xT').value,
-    laminaNum:c.laminas,premio:gratis});
-  save(d);VP=c;
+    laminaNum:c.laminas,premio:gratis
+  };
+  await guardarInstalacion(ins);
+  VP=c;
   document.getElementById('rNom').textContent=c.nombre;
   document.getElementById('rRut').textContent=c.rut;
   document.getElementById('rCnt').textContent=c.laminas;
@@ -394,6 +558,21 @@ function vConfirmar(){
   toast(gratis?'🎁 ¡Lámina gratis registrada!':'✅ Lámina registrada',gratis?'#FF6F00':'#2E7D32');
 }
 function vOtra(){if(VP)vShowConf(VP);}
+async function vEliminarUltima(){
+  if(!VP)return;
+  if(!confirm(`¿Eliminar la última lámina registrada a ${VP.nombre}? Esta acción no se puede deshacer.`))return;
+  const key=rk(VP.rut);
+  const ok=await eliminarUltimaInstalacion(key);
+  if(ok){
+    VP=localDB.c[key];
+    document.getElementById('rCnt').textContent=VP.laminas;
+    mkSlots('rSlots',VP.laminas);
+    toast('↩ Lámina eliminada','#E53935');
+    vShow('Res');
+  }else{
+    toast('No hay láminas para eliminar','#FF6F00');
+  }
+}
 function vReset(){
   VP=null;
   ['vRut','vNom','vTel'].forEach(i=>document.getElementById(i).value='');
@@ -402,66 +581,10 @@ function vReset(){
   vShow('Buscar');
 }
 
-// ═══ MI TARJETA ═══
-function cShow(f){['Ing','Nuevo','Tar'].forEach(x=>document.getElementById('c'+x).classList.toggle('hide',x!==f));}
-function cBuscar(){
-  const rut=document.getElementById('cRutI').value;
-  const er=document.getElementById('cIngErr');er.classList.add('hide');
-  if(!valRut(rut)){er.textContent='RUT inválido. Ej: 12.345.678-9';er.classList.remove('hide');return;}
-  const d=db(),c=d.c[rk(rut)];
-  if(c)cVerTarjeta(c);else cShow('Nuevo');
-}
-function cRegistrar(){
-  const nom=document.getElementById('cNomI').value.trim();
-  const er=document.getElementById('cNErr');er.classList.add('hide');
-  if(!nom){er.textContent='Ingresa tu nombre';er.classList.remove('hide');return;}
-  const rut=document.getElementById('cRutI').value;
-  const d=db(),key=rk(rut);
-  const c={rut:fmtRut(rut),nombre:nom,telefono:document.getElementById('cTelI').value,laminas:0};
-  d.c[key]=c;save(d);cVerTarjeta(c);
-}
-function cVerTarjeta(c){
-  document.getElementById('tNom').textContent=c.nombre;
-  document.getElementById('tRut').textContent=c.rut;
-  document.getElementById('tCnt').textContent=c.laminas;
-  mkSlots('tSlots',c.laminas);
-  const f=N-(c.laminas%N);
-  document.getElementById('tMsg').textContent=
-    c.laminas%N===0&&c.laminas>0?'🎁 ¡Tienes una lámina gratis disponible!':
-    f===1?'🔥 ¡Solo 1 lámina más para la gratis!':`Faltan ${f} láminas para tu próxima gratis`;
-
-  // QR personal con URL real que incluye el RUT
-  mkQR('qCliente','qCLoader', APP_URL+'?v=cliente&r='+rk(c.rut));
-
-  // Historial
-  const d=db(),key=rk(c.rut);
-  const ins=(d.i||[]).filter(x=>rk(x.clienteRut)===key);
-  const hEl=document.getElementById('cHist');
-  if(ins.length>0){
-    document.getElementById('cHistList').innerHTML=ins.slice(0,20).map(x=>`
-      <div style="padding:6px 0;border-bottom:1px solid #F0F4F8;font-size:12px;">
-        <div style="display:flex;justify-content:space-between;">
-          <span style="font-weight:600;">${x.tipoLamina}</span>
-          <span style="color:${x.premio?'#FF6F00':'#78909C'};font-weight:${x.premio?700:400};">${x.premio?'🎁 GRATIS':'#'+x.laminaNum}</span>
-        </div>
-        <div style="color:#78909C;margin-top:2px;">${x.sucursal} · ${x.vendedor} · ${x.fecha}</div>
-      </div>`).join('');
-    hEl.classList.remove('hide');
-  }else hEl.classList.add('hide');
-  cShow('Tar');
-}
-function cReset(){
-  ['cRutI','cNomI','cTelI'].forEach(i=>document.getElementById(i).value='');
-  ['cIngErr','cNErr'].forEach(i=>document.getElementById(i).classList.add('hide'));
-  const b=document.getElementById('qCliente');b.innerHTML='';b.classList.add('hide');
-  document.getElementById('qCLoader').classList.remove('hide');
-  cShow('Ing');
-}
-
 // ═══ LISTADO ═══
 function renderL(){
-  const d=db(),busq=(document.getElementById('lBusq').value||'').toLowerCase();
-  const lista=Object.values(d.c).sort((a,b)=>b.laminas-a.laminas);
+  const busq=(document.getElementById('lBusq').value||'').toLowerCase();
+  const lista=Object.values(localDB.c).sort((a,b)=>b.laminas-a.laminas);
   document.getElementById('lCnt').textContent=lista.length+' clientes registrados';
   const fil=lista.filter(c=>c.nombre.toLowerCase().includes(busq)||c.rut.includes(busq));
   document.getElementById('lItems').innerHTML=fil.length===0
@@ -469,7 +592,7 @@ function renderL(){
     :fil.map(c=>{
       const pos=c.laminas%N,f=pos===0&&c.laminas>0?0:N-pos;
       const dots=Array.from({length:N}).map((_,i)=>`<div class="ms${i<pos?' f':''}"></div>`).join('');
-      return`<div class="card" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="verC('${rk(c.rut)}')">
+      return`<div class="card" style="display:flex;justify-content:space-between;align-items:center;">
         <div style="flex:1;">
           <p style="font-weight:700;color:#1A237E;margin:0;font-size:15px;">${c.nombre}</p>
           <p style="color:#78909C;font-size:12px;margin:2px 0 6px;">${c.rut}${c.telefono?' · '+c.telefono:''}</p>
@@ -482,18 +605,11 @@ function renderL(){
       </div>`;
     }).join('');
 }
-function verC(key){
-  const d=db(),c=d.c[key];if(!c)return;
-  document.querySelectorAll('.tab')[1].click();
-  document.getElementById('cRutI').value=c.rut;
-  cVerTarjeta(c);
-}
 
 // ═══ ANÁLISIS ═══
 function renderA(){
-  const d=db();
   const suc=document.getElementById('aSuc').value,ven=document.getElementById('aVen').value;
-  const data=(d.i||[]).filter(x=>(suc==='Todas'||x.sucursal===suc)&&(ven==='Todos'||x.vendedor===ven));
+  const data=(localDB.i||[]).filter(x=>(suc==='Todas'||x.sucursal===suc)&&(ven==='Todos'||x.vendedor===ven));
   let pr=0,pT={},pV={},pS={};
   data.forEach(x=>{pT[x.tipoLamina]=(pT[x.tipoLamina]||0)+1;pV[x.vendedor]=(pV[x.vendedor]||0)+1;pS[x.sucursal]=(pS[x.sucursal]||0)+1;if(x.premio)pr++;});
   document.getElementById('aRes').textContent=`${data.length} instalaciones · ${pr} premios entregados`;
@@ -509,6 +625,41 @@ function renderA(){
     :blq('Láminas por tipo',sd(pT),'#00BFA5')+blq('Por vendedor',sd(pV),'#1A237E')+blq('Por sucursal',sd(pS),'#FF6F00')
       +(ult?`<div class="card"><p style="font-weight:700;color:#1A237E;font-size:14px;margin-bottom:10px;">Últimas 10 instalaciones</p>${ult}</div>`:'');
 }
+
+// ═══ INICIO ═══
+window.addEventListener('load', async () => {
+  // Cargar datos desde Firebase
+  cargarDesdeFirebase();
+
+  // Detectar si fue abierto desde QR
+  const p = new URLSearchParams(window.location.search);
+  const v = p.get('v'), r = p.get('r');
+
+  if (v === 'cliente') {
+    // Modo cliente: ocultar panel vendedor, mostrar solo tarjeta
+    document.getElementById('modoVendedor').classList.add('hide');
+    document.getElementById('modoCliente').classList.remove('hide');
+    if (r) {
+      // Esperar que Firebase cargue y luego buscar cliente
+      fbReady(async () => {
+        await cargarDesdeFirebase();
+        setTimeout(() => {
+          const c = localDB.c[r];
+          if (c) {
+            mcVerTarjeta(c);
+          } else {
+            document.getElementById('mcRut').value = fmtRut(r);
+            document.getElementById('mcIng').classList.add('hide');
+            document.getElementById('mcNuevo').classList.remove('hide');
+          }
+        }, 1000);
+      });
+    }
+  } else {
+    // Modo vendedor: generar QR de la tienda
+    mkQR('qTienda','qTLoader', APP_URL+'?v=cliente');
+  }
+});
 </script>
 </body>
 </html>
